@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     Star, ChevronRight, SlidersHorizontal, Grid3X3, List,
@@ -24,7 +24,26 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
     const [compareList, setCompareList] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState<string>('featured');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    // Track screen width
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
+
+    // Lock body scroll when mobile sidebar is open
+    useEffect(() => {
+        if (isMobile && sidebarOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [isMobile, sidebarOpen]);
 
     const filteredProducts = useMemo(() => {
         let filtered = products.filter((p) => {
@@ -71,6 +90,149 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
         { label: 'All Prices', range: [0, 1500000] as [number, number] },
     ];
 
+    const sidebarContent = (
+        <>
+            {/* Categories Filter */}
+            <div style={{
+                background: '#fff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                marginBottom: '20px',
+            }}>
+                <h3 style={{
+                    fontFamily: 'Gloock, serif',
+                    fontSize: '16px',
+                    color: '#0a1628',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                }}>
+                    <SlidersHorizontal size={18} style={{ color: '#0066CC' }} />
+                    Filter by Category
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {/* All Products */}
+                    <motion.button
+                        onClick={() => { setSelectedCategory('all'); if (isMobile) setSidebarOpen(false); }}
+                        whileHover={{ x: 4 }}
+                        style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontFamily: 'Lora, serif',
+                            fontSize: '14px',
+                            textAlign: 'left' as const,
+                            background: selectedCategory === 'all' ? 'linear-gradient(135deg, #0066CC, #0052A3)' : '#f8fafc',
+                            color: selectedCategory === 'all' ? '#fff' : '#374151',
+                            transition: 'all 0.2s',
+                        }}
+                    >
+                        <Grid3X3 size={16} />
+                        All Products
+                    </motion.button>
+
+                    {categories.map((cat) => {
+                        const Icon = categoryIcons[cat.id] || Grid3X3;
+                        const isActive = selectedCategory === cat.id;
+                        const count = products.filter((p) => p.category === cat.id).length;
+                        return (
+                            <motion.button
+                                key={cat.id}
+                                onClick={() => { setSelectedCategory(cat.id); if (isMobile) setSidebarOpen(false); }}
+                                whileHover={{ x: 4 }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    padding: '10px 14px',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontFamily: 'Lora, serif',
+                                    fontSize: '14px',
+                                    textAlign: 'left' as const,
+                                    background: isActive ? 'linear-gradient(135deg, #0066CC, #0052A3)' : '#f8fafc',
+                                    color: isActive ? '#fff' : '#374151',
+                                    transition: 'all 0.2s',
+                                    justifyContent: 'space-between',
+                                }}
+                            >
+                                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                    <Icon size={16} />
+                                    {cat.label}
+                                </span>
+                                <span style={{
+                                    fontSize: '11px',
+                                    background: isActive ? 'rgba(255,255,255,0.2)' : '#e2e8f0',
+                                    padding: '2px 8px',
+                                    borderRadius: '10px',
+                                    color: isActive ? '#fff' : '#64748b',
+                                }}>
+                                    {count}
+                                </span>
+                            </motion.button>
+                        );
+                    })}
+                </div>
+            </div>
+
+            {/* Price Range Filter */}
+            <div style={{
+                background: '#fff',
+                borderRadius: '16px',
+                padding: '24px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            }}>
+                <h3 style={{
+                    fontFamily: 'Gloock, serif',
+                    fontSize: '16px',
+                    color: '#0a1628',
+                    marginBottom: '16px',
+                }}>
+                    Price Range
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {priceSteps.map((step) => {
+                        const isActive = priceRange[0] === step.range[0] && priceRange[1] === step.range[1];
+                        return (
+                            <motion.button
+                                key={step.label}
+                                onClick={() => { setPriceRange(step.range); if (isMobile) setSidebarOpen(false); }}
+                                whileHover={{ x: 4 }}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    padding: '8px 14px',
+                                    borderRadius: '10px',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontFamily: 'Lora, serif',
+                                    fontSize: '13px',
+                                    textAlign: 'left' as const,
+                                    background: isActive ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#f8fafc',
+                                    color: isActive ? '#0a1628' : '#374151',
+                                    fontWeight: isActive ? 600 : 400,
+                                    transition: 'all 0.2s',
+                                }}
+                            >
+                                {step.label}
+                            </motion.button>
+                        );
+                    })}
+                </div>
+            </div>
+        </>
+    );
+
     return (
         <div style={{ background: '#f8fafc', minHeight: '100vh' }}>
             {/* Breadcrumb */}
@@ -79,7 +241,7 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                 padding: '20px 0',
                 borderBottom: '1px solid rgba(255, 215, 0, 0.1)',
             }}>
-                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <motion.a
                             onClick={() => onNavigate('/')}
@@ -112,7 +274,7 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                         animate={{ opacity: 1, y: 0 }}
                         style={{
                             fontFamily: 'Gloock, serif',
-                            fontSize: '32px',
+                            fontSize: 'clamp(24px, 5vw, 32px)',
                             color: '#fff',
                             marginTop: '12px',
                         }}
@@ -131,169 +293,101 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
             </div>
 
             {/* Main Content */}
-            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px 24px', display: 'flex', gap: '32px' }}>
-                {/* Sidebar */}
-                <AnimatePresence>
-                    {sidebarOpen && (
-                        <motion.aside
-                            initial={{ opacity: 0, x: -30 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            exit={{ opacity: 0, x: -30 }}
-                            style={{
-                                width: '280px',
-                                flexShrink: 0,
-                            }}
-                        >
-                            {/* Categories Filter */}
-                            <div style={{
-                                background: '#fff',
-                                borderRadius: '16px',
-                                padding: '24px',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                                marginBottom: '20px',
-                            }}>
-                                <h3 style={{
-                                    fontFamily: 'Gloock, serif',
-                                    fontSize: '16px',
-                                    color: '#0a1628',
-                                    marginBottom: '16px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '8px',
-                                }}>
-                                    <SlidersHorizontal size={18} style={{ color: '#0066CC' }} />
-                                    Filter by Category
-                                </h3>
+            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '24px 16px', display: 'flex', gap: '32px' }}>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {/* All Products */}
-                                    <motion.button
-                                        onClick={() => setSelectedCategory('all')}
-                                        whileHover={{ x: 4 }}
-                                        style={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '10px',
-                                            padding: '10px 14px',
-                                            borderRadius: '10px',
-                                            border: 'none',
-                                            cursor: 'pointer',
-                                            fontFamily: 'Lora, serif',
-                                            fontSize: '14px',
-                                            textAlign: 'left' as const,
-                                            background: selectedCategory === 'all' ? 'linear-gradient(135deg, #0066CC, #0052A3)' : '#f8fafc',
-                                            color: selectedCategory === 'all' ? '#fff' : '#374151',
-                                            transition: 'all 0.2s',
-                                        }}
-                                    >
-                                        <Grid3X3 size={16} />
-                                        All Products
-                                    </motion.button>
+                {/* Sidebar — Desktop (inline) */}
+                {!isMobile && (
+                    <AnimatePresence>
+                        {sidebarOpen && (
+                            <motion.aside
+                                initial={{ opacity: 0, x: -30 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -30 }}
+                                style={{
+                                    width: '280px',
+                                    flexShrink: 0,
+                                }}
+                            >
+                                {sidebarContent}
+                            </motion.aside>
+                        )}
+                    </AnimatePresence>
+                )}
 
-                                    {categories.map((cat) => {
-                                        const Icon = categoryIcons[cat.id] || Grid3X3;
-                                        const isActive = selectedCategory === cat.id;
-                                        const count = products.filter((p) => p.category === cat.id).length;
-                                        return (
-                                            <motion.button
-                                                key={cat.id}
-                                                onClick={() => setSelectedCategory(cat.id)}
-                                                whileHover={{ x: 4 }}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '10px',
-                                                    padding: '10px 14px',
-                                                    borderRadius: '10px',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    fontFamily: 'Lora, serif',
-                                                    fontSize: '14px',
-                                                    textAlign: 'left' as const,
-                                                    background: isActive ? 'linear-gradient(135deg, #0066CC, #0052A3)' : '#f8fafc',
-                                                    color: isActive ? '#fff' : '#374151',
-                                                    transition: 'all 0.2s',
-                                                    justifyContent: 'space-between',
-                                                }}
-                                            >
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <Icon size={16} />
-                                                    {cat.label}
-                                                </span>
-                                                <span style={{
-                                                    fontSize: '11px',
-                                                    background: isActive ? 'rgba(255,255,255,0.2)' : '#e2e8f0',
-                                                    padding: '2px 8px',
-                                                    borderRadius: '10px',
-                                                    color: isActive ? '#fff' : '#64748b',
-                                                }}>
-                                                    {count}
-                                                </span>
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-
-                            {/* Price Range Filter */}
-                            <div style={{
-                                background: '#fff',
-                                borderRadius: '16px',
-                                padding: '24px',
-                                boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
-                            }}>
-                                <h3 style={{
-                                    fontFamily: 'Gloock, serif',
-                                    fontSize: '16px',
-                                    color: '#0a1628',
-                                    marginBottom: '16px',
-                                }}>
-                                    Price Range
-                                </h3>
-
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                                    {priceSteps.map((step) => {
-                                        const isActive = priceRange[0] === step.range[0] && priceRange[1] === step.range[1];
-                                        return (
-                                            <motion.button
-                                                key={step.label}
-                                                onClick={() => setPriceRange(step.range)}
-                                                whileHover={{ x: 4 }}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '10px',
-                                                    padding: '8px 14px',
-                                                    borderRadius: '10px',
-                                                    border: 'none',
-                                                    cursor: 'pointer',
-                                                    fontFamily: 'Lora, serif',
-                                                    fontSize: '13px',
-                                                    textAlign: 'left' as const,
-                                                    background: isActive ? 'linear-gradient(135deg, #FFD700, #FFA500)' : '#f8fafc',
-                                                    color: isActive ? '#0a1628' : '#374151',
-                                                    fontWeight: isActive ? 600 : 400,
-                                                    transition: 'all 0.2s',
-                                                }}
-                                            >
-                                                {step.label}
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </motion.aside>
-                    )}
-                </AnimatePresence>
+                {/* Sidebar — Mobile (overlay drawer) */}
+                {isMobile && (
+                    <AnimatePresence>
+                        {sidebarOpen && (
+                            <>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    onClick={() => setSidebarOpen(false)}
+                                    style={{
+                                        position: 'fixed',
+                                        inset: 0,
+                                        background: 'rgba(0,0,0,0.5)',
+                                        zIndex: 998,
+                                    }}
+                                />
+                                <motion.aside
+                                    initial={{ x: '-100%' }}
+                                    animate={{ x: 0 }}
+                                    exit={{ x: '-100%' }}
+                                    transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+                                    style={{
+                                        position: 'fixed',
+                                        top: 0,
+                                        left: 0,
+                                        bottom: 0,
+                                        width: '85%',
+                                        maxWidth: '340px',
+                                        background: '#f8fafc',
+                                        zIndex: 999,
+                                        overflowY: 'auto',
+                                        padding: '20px',
+                                        boxShadow: '10px 0 40px rgba(0,0,0,0.3)',
+                                    }}
+                                >
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '20px',
+                                    }}>
+                                        <h2 style={{
+                                            fontFamily: 'Gloock, serif',
+                                            fontSize: '20px',
+                                            color: '#0a1628',
+                                        }}>
+                                            Filters
+                                        </h2>
+                                        <motion.button
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setSidebarOpen(false)}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#374151' }}
+                                        >
+                                            <X size={24} />
+                                        </motion.button>
+                                    </div>
+                                    {sidebarContent}
+                                </motion.aside>
+                            </>
+                        )}
+                    </AnimatePresence>
+                )}
 
                 {/* Product Grid */}
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                     {/* Toolbar */}
                     <div style={{
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'center',
                         marginBottom: '24px',
+                        flexWrap: 'wrap',
+                        gap: '10px',
                     }}>
                         <button
                             onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -312,15 +406,15 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                             }}
                         >
                             <SlidersHorizontal size={14} />
-                            {sidebarOpen ? 'Hide Filters' : 'Show Filters'}
+                            {sidebarOpen && !isMobile ? 'Hide Filters' : 'Filters'}
                         </button>
 
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <select
                                 value={sortBy}
                                 onChange={(e) => setSortBy(e.target.value)}
                                 style={{
-                                    padding: '8px 16px',
+                                    padding: '8px 12px',
                                     borderRadius: '10px',
                                     border: '1px solid #e2e8f0',
                                     background: '#fff',
@@ -366,13 +460,17 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                         </div>
                     </div>
 
-                    {/* Product Cards Grid */}
+                    {/* Product Cards Grid — Responsive */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: viewMode === 'grid'
-                            ? (sidebarOpen ? 'repeat(3, 1fr)' : 'repeat(4, 1fr)')
+                            ? (isMobile
+                                ? 'repeat(auto-fill, minmax(160px, 1fr))'
+                                : sidebarOpen
+                                    ? 'repeat(3, 1fr)'
+                                    : 'repeat(4, 1fr)')
                             : '1fr',
-                        gap: '20px',
+                        gap: isMobile ? '12px' : '20px',
                     }}>
                         <AnimatePresence mode="popLayout">
                             {filteredProducts.map((product, index) => (
@@ -384,6 +482,7 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                                     isCompared={compareList.includes(product.id)}
                                     onToggleCompare={() => toggleCompare(product.id)}
                                     viewMode={viewMode}
+                                    isMobile={isMobile}
                                 />
                             ))}
                         </AnimatePresence>
@@ -423,7 +522,7 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                             right: 0,
                             background: 'linear-gradient(135deg, #0a1628, #0d2145)',
                             border: '1px solid rgba(255, 215, 0, 0.15)',
-                            padding: '16px 24px',
+                            padding: isMobile ? '12px 16px' : '16px 24px',
                             zIndex: 999,
                             boxShadow: '0 -10px 40px rgba(0,0,0,0.3)',
                         }}
@@ -434,8 +533,10 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '10px',
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                                 <span style={{
                                     fontFamily: 'Gloock, serif',
                                     fontSize: '14px',
@@ -443,33 +544,35 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                                 }}>
                                     Compare ({compareList.length}/3)
                                 </span>
-                                <div style={{ display: 'flex', gap: '8px' }}>
-                                    {compareList.map((id) => {
-                                        const p = products.find((x) => x.id === id);
-                                        return p ? (
-                                            <div
-                                                key={id}
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: '8px',
-                                                    background: 'rgba(255,255,255,0.08)',
-                                                    padding: '6px 12px',
-                                                    borderRadius: '10px',
-                                                }}
-                                            >
-                                                <span style={{ fontFamily: 'Lora, serif', fontSize: '12px', color: '#fff' }}>
-                                                    {p.title}
-                                                </span>
-                                                <X
-                                                    size={14}
-                                                    style={{ color: '#94a3b8', cursor: 'pointer' }}
-                                                    onClick={() => toggleCompare(id)}
-                                                />
-                                            </div>
-                                        ) : null;
-                                    })}
-                                </div>
+                                {!isMobile && (
+                                    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        {compareList.map((id) => {
+                                            const p = products.find((x) => x.id === id);
+                                            return p ? (
+                                                <div
+                                                    key={id}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '8px',
+                                                        background: 'rgba(255,255,255,0.08)',
+                                                        padding: '6px 12px',
+                                                        borderRadius: '10px',
+                                                    }}
+                                                >
+                                                    <span style={{ fontFamily: 'Lora, serif', fontSize: '12px', color: '#fff' }}>
+                                                        {p.title}
+                                                    </span>
+                                                    <X
+                                                        size={14}
+                                                        style={{ color: '#94a3b8', cursor: 'pointer' }}
+                                                        onClick={() => toggleCompare(id)}
+                                                    />
+                                                </div>
+                                            ) : null;
+                                        })}
+                                    </div>
+                                )}
                             </div>
                             <div style={{ display: 'flex', gap: '10px' }}>
                                 <button
@@ -480,12 +583,12 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                                         color: '#94a3b8',
                                         background: 'transparent',
                                         border: '1px solid rgba(255,255,255,0.1)',
-                                        padding: '8px 20px',
+                                        padding: '8px 16px',
                                         borderRadius: '10px',
                                         cursor: 'pointer',
                                     }}
                                 >
-                                    Clear All
+                                    Clear
                                 </button>
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
@@ -497,7 +600,7 @@ export function ProductListingPage({ category, onNavigate }: ProductListingPageP
                                         color: '#0a1628',
                                         background: 'linear-gradient(135deg, #FFD700, #FFA500)',
                                         border: 'none',
-                                        padding: '8px 24px',
+                                        padding: '8px 20px',
                                         borderRadius: '10px',
                                         cursor: 'pointer',
                                     }}
@@ -521,6 +624,7 @@ function ProductCard({
     isCompared,
     onToggleCompare,
     viewMode,
+    isMobile,
 }: {
     product: Product;
     index: number;
@@ -528,6 +632,7 @@ function ProductCard({
     isCompared: boolean;
     onToggleCompare: () => void;
     viewMode: 'grid' | 'list';
+    isMobile: boolean;
 }) {
     if (viewMode === 'list') {
         return (
@@ -539,7 +644,8 @@ function ProductCard({
                 transition={{ delay: index * 0.05 }}
                 style={{
                     display: 'flex',
-                    gap: '20px',
+                    flexDirection: isMobile ? 'column' : 'row',
+                    gap: isMobile ? '0' : '20px',
                     background: '#fff',
                     borderRadius: '16px',
                     overflow: 'hidden',
@@ -550,7 +656,12 @@ function ProductCard({
                 whileHover={{ y: -2, boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}
                 onClick={() => onNavigate(`/product/${product.slug}`)}
             >
-                <div style={{ width: '200px', height: '180px', flexShrink: 0, position: 'relative' }}>
+                <div style={{
+                    width: isMobile ? '100%' : '200px',
+                    height: isMobile ? '180px' : '180px',
+                    flexShrink: 0,
+                    position: 'relative',
+                }}>
                     <img
                         src={product.image}
                         alt={product.title}
@@ -573,12 +684,18 @@ function ProductCard({
                         </span>
                     )}
                 </div>
-                <div style={{ flex: 1, padding: '20px 20px 20px 0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div style={{
+                    flex: 1,
+                    padding: isMobile ? '16px' : '20px 20px 20px 0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                }}>
                     <div>
                         <p style={{ fontFamily: 'Lora, serif', fontSize: '11px', color: '#0066CC', fontWeight: 600, textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: '4px' }}>
                             {product.brand}
                         </p>
-                        <h3 style={{ fontFamily: 'Gloock, serif', fontSize: '18px', color: '#0a1628', marginBottom: '4px' }}>
+                        <h3 style={{ fontFamily: 'Gloock, serif', fontSize: isMobile ? '16px' : '18px', color: '#0a1628', marginBottom: '4px' }}>
                             {product.title}
                         </h3>
                         <p style={{ fontFamily: 'Lora, serif', fontSize: '13px', color: '#64748b', marginBottom: '8px' }}>
@@ -600,7 +717,7 @@ function ProductCard({
                             </span>
                         </div>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '10px' }}>
                         <div>
                             <span style={{ fontFamily: 'Gloock, serif', fontSize: '20px', color: '#0066CC' }}>
                                 {formatPrice(product.price)}
@@ -725,7 +842,7 @@ function ProductCard({
             </div>
 
             {/* Content */}
-            <div style={{ padding: '16px 18px 20px' }}>
+            <div style={{ padding: isMobile ? '12px 14px 16px' : '16px 18px 20px' }}>
                 <p style={{
                     fontFamily: 'Lora, serif',
                     fontSize: '11px',
@@ -739,52 +856,54 @@ function ProductCard({
                 </p>
                 <h3 style={{
                     fontFamily: 'Gloock, serif',
-                    fontSize: '16px',
+                    fontSize: isMobile ? '14px' : '16px',
                     color: '#0a1628',
                     marginBottom: '4px',
                 }}>
                     {product.title}
                 </h3>
-                <p style={{
-                    fontFamily: 'Lora, serif',
-                    fontSize: '12px',
-                    color: '#64748b',
-                    marginBottom: '10px',
-                    lineHeight: 1.4,
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical' as const,
-                    overflow: 'hidden',
-                }}>
-                    {product.shortDescription}
-                </p>
+                {!isMobile && (
+                    <p style={{
+                        fontFamily: 'Lora, serif',
+                        fontSize: '12px',
+                        color: '#64748b',
+                        marginBottom: '10px',
+                        lineHeight: 1.4,
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical' as const,
+                        overflow: 'hidden',
+                    }}>
+                        {product.shortDescription}
+                    </p>
+                )}
 
                 {/* Rating */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
                     <div style={{ display: 'flex', gap: '2px' }}>
                         {Array.from({ length: 5 }).map((_, i) => (
                             <Star
                                 key={i}
-                                size={13}
+                                size={isMobile ? 11 : 13}
                                 fill={i < Math.floor(product.rating) ? '#FFD700' : 'none'}
                                 stroke={i < Math.floor(product.rating) ? '#FFD700' : '#d1d5db'}
                             />
                         ))}
                     </div>
-                    <span style={{ fontFamily: 'Lora, serif', fontSize: '12px', color: '#94a3b8' }}>
-                        {product.rating} ({product.reviewCount})
+                    <span style={{ fontFamily: 'Lora, serif', fontSize: isMobile ? '11px' : '12px', color: '#94a3b8' }}>
+                        {product.rating}
                     </span>
                 </div>
 
                 {/* Price */}
-                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontFamily: 'Gloock, serif', fontSize: '20px', color: '#0066CC' }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontFamily: 'Gloock, serif', fontSize: isMobile ? '16px' : '20px', color: '#0066CC' }}>
                         {formatPrice(product.price)}
                     </span>
                     {product.originalPrice && (
                         <span style={{
                             fontFamily: 'Lora, serif',
-                            fontSize: '13px',
+                            fontSize: isMobile ? '11px' : '13px',
                             color: '#94a3b8',
                             textDecoration: 'line-through',
                         }}>

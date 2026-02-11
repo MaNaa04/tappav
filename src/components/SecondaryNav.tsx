@@ -18,13 +18,13 @@ export function SecondaryNav() {
       transition={{ delay: 0.3 }}
       className="bg-white border-b border-gray-200 py-3"
     >
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-center gap-8 flex-wrap">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center sm:justify-center gap-4 sm:gap-8 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           {links.map((link, index) => (
             <motion.a
               key={link}
               href={`#${link.toLowerCase().replace(/\s+/g, '-')}`}
-              className="text-sm text-gray-700 hover:text-[#0066CC] transition-colors"
+              className="text-sm text-gray-700 hover:text-[#0066CC] transition-colors whitespace-nowrap"
               style={{ fontFamily: 'Lora, serif' }}
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}

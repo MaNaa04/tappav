@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
     Star, ChevronRight, Minus, Plus, ShoppingCart,
@@ -25,10 +25,18 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
     const [quantity, setQuantity] = useState(1);
     const [compareActive, setCompareActive] = useState(false);
     const [expandedSpec, setExpandedSpec] = useState(true);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const check = () => setIsMobile(window.innerWidth < 768);
+        check();
+        window.addEventListener('resize', check);
+        return () => window.removeEventListener('resize', check);
+    }, []);
 
     if (!product) {
         return (
-            <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
                 <div style={{ textAlign: 'center' }}>
                     <h2 style={{ fontFamily: 'Gloock, serif', fontSize: '28px', color: '#0a1628', marginBottom: '12px' }}>
                         Product Not Found
@@ -74,13 +82,15 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                 padding: '16px 0',
                 borderBottom: '1px solid rgba(255, 215, 0, 0.1)',
             }}>
-                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 16px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                         {[
                             { label: 'Home', path: '/' },
                             { label: 'Store', path: '/store' },
-                            { label: getCategoryLabel(product.category), path: `/store/${product.category}` },
-                            { label: product.brand, path: `/store/${product.category}` },
+                            ...(isMobile ? [] : [
+                                { label: getCategoryLabel(product.category), path: `/store/${product.category}` },
+                                { label: product.brand, path: `/store/${product.category}` },
+                            ]),
                         ].map((crumb, i) => (
                             <span key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {i > 0 && <ChevronRight size={14} style={{ color: '#475569' }} />}
@@ -99,7 +109,12 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                             </span>
                         ))}
                         <ChevronRight size={14} style={{ color: '#475569' }} />
-                        <span style={{ fontFamily: 'Lora, serif', fontSize: '13px', color: '#FFD700' }}>
+                        <span style={{
+                            fontFamily: 'Lora, serif',
+                            fontSize: '13px',
+                            color: '#FFD700',
+                            wordBreak: 'break-word',
+                        }}>
                             {product.title}
                         </span>
                     </div>
@@ -107,8 +122,13 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
             </div>
 
             {/* Main Product Section */}
-            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '40px 24px' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'start' }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '24px 16px' : '40px 24px' }}>
+                <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                    gap: isMobile ? '24px' : '60px',
+                    alignItems: 'start',
+                }}>
                     {/* Left: Image Gallery */}
                     <motion.div
                         initial={{ opacity: 0, x: -40 }}
@@ -135,7 +155,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                     transition={{ duration: 0.3 }}
                                     style={{
                                         width: '100%',
-                                        height: '480px',
+                                        height: isMobile ? '280px' : '480px',
                                         objectFit: 'cover',
                                         display: 'block',
                                     }}
@@ -188,6 +208,8 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                             <div style={{
                                 display: 'flex',
                                 gap: '10px',
+                                overflowX: 'auto',
+                                paddingBottom: '4px',
                             }}>
                                 {product.images.map((img, i) => (
                                     <motion.div
@@ -196,8 +218,8 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                         whileHover={{ scale: 1.05 }}
                                         whileTap={{ scale: 0.95 }}
                                         style={{
-                                            width: '80px',
-                                            height: '80px',
+                                            width: isMobile ? '60px' : '80px',
+                                            height: isMobile ? '60px' : '80px',
                                             borderRadius: '12px',
                                             overflow: 'hidden',
                                             cursor: 'pointer',
@@ -208,6 +230,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                                 ? '0 0 0 2px rgba(0, 102, 204, 0.2)'
                                                 : '0 1px 3px rgba(0,0,0,0.06)',
                                             transition: 'all 0.2s',
+                                            flexShrink: 0,
                                         }}
                                     >
                                         <img
@@ -243,7 +266,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         {/* Title */}
                         <h1 style={{
                             fontFamily: 'Gloock, serif',
-                            fontSize: '32px',
+                            fontSize: isMobile ? '24px' : '32px',
                             color: '#0a1628',
                             lineHeight: 1.2,
                             marginBottom: '6px',
@@ -265,10 +288,11 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         <div style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '12px',
+                            gap: '8px',
                             marginBottom: '24px',
                             paddingBottom: '20px',
                             borderBottom: '1px solid #e2e8f0',
+                            flexWrap: 'wrap',
                         }}>
                             <div style={{ display: 'flex', gap: '3px' }}>
                                 {Array.from({ length: 5 }).map((_, i) => (
@@ -308,18 +332,24 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         <div style={{
                             background: 'linear-gradient(135deg, #f0f7ff, #f8fafc)',
                             borderRadius: '16px',
-                            padding: '20px',
+                            padding: isMobile ? '16px' : '20px',
                             marginBottom: '24px',
                             border: '1px solid #e0edff',
                         }}>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '8px' }}>
-                                <span style={{ fontFamily: 'Gloock, serif', fontSize: '36px', color: '#0066CC' }}>
+                            <div style={{
+                                display: 'flex',
+                                alignItems: 'baseline',
+                                gap: '10px',
+                                marginBottom: '8px',
+                                flexWrap: 'wrap',
+                            }}>
+                                <span style={{ fontFamily: 'Gloock, serif', fontSize: isMobile ? '28px' : '36px', color: '#0066CC' }}>
                                     {formatPrice(product.price)}
                                 </span>
                                 {product.originalPrice && (
                                     <span style={{
                                         fontFamily: 'Lora, serif',
-                                        fontSize: '18px',
+                                        fontSize: isMobile ? '15px' : '18px',
                                         color: '#94a3b8',
                                         textDecoration: 'line-through',
                                     }}>
@@ -353,7 +383,12 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         </div>
 
                         {/* Quantity Selector & Add to Cart */}
-                        <div style={{ display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '12px',
+                            alignItems: 'center',
+                            marginBottom: '16px',
+                        }}>
                             {/* Quantity */}
                             <div style={{
                                 display: 'flex',
@@ -380,7 +415,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                     <Minus size={16} />
                                 </motion.button>
                                 <span style={{
-                                    width: '50px',
+                                    width: '44px',
                                     textAlign: 'center',
                                     fontFamily: 'Lora, serif',
                                     fontSize: '16px',
@@ -418,14 +453,14 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                     alignItems: 'center',
                                     justifyContent: 'center',
                                     gap: '10px',
-                                    padding: '14px 24px',
+                                    padding: '14px 20px',
                                     background: 'linear-gradient(135deg, #0066CC, #0052A3)',
                                     color: '#fff',
                                     border: 'none',
                                     borderRadius: '12px',
                                     cursor: 'pointer',
                                     fontFamily: 'Lora, serif',
-                                    fontSize: '16px',
+                                    fontSize: isMobile ? '14px' : '16px',
                                     fontWeight: 600,
                                     transition: 'all 0.3s',
                                 }}
@@ -484,7 +519,11 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                 }}>
                                     Key Specifications
                                 </h4>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                                    gap: '8px',
+                                }}>
                                     {Object.entries(product.specs).slice(0, 6).map(([key, value]) => (
                                         <div key={key} style={{
                                             background: '#f8fafc',
@@ -515,10 +554,10 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                 <div style={{
                     maxWidth: '1280px',
                     margin: '0 auto',
-                    padding: '32px 24px',
+                    padding: isMobile ? '24px 16px' : '32px 24px',
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(3, 1fr)',
-                    gap: '32px',
+                    gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+                    gap: isMobile ? '16px' : '32px',
                 }}>
                     {[
                         {
@@ -557,8 +596,8 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                             }}
                         >
                             <div style={{
-                                width: '52px',
-                                height: '52px',
+                                width: isMobile ? '44px' : '52px',
+                                height: isMobile ? '44px' : '52px',
                                 borderRadius: '14px',
                                 background: `${item.color}15`,
                                 display: 'flex',
@@ -566,12 +605,12 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                 justifyContent: 'center',
                                 flexShrink: 0,
                             }}>
-                                <item.icon size={24} style={{ color: item.color }} />
+                                <item.icon size={isMobile ? 20 : 24} style={{ color: item.color }} />
                             </div>
                             <div>
                                 <h4 style={{
                                     fontFamily: 'Gloock, serif',
-                                    fontSize: '15px',
+                                    fontSize: isMobile ? '13px' : '15px',
                                     color: '#fff',
                                     marginBottom: '4px',
                                 }}>
@@ -596,17 +635,17 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                 <div style={{
                     maxWidth: '1280px',
                     margin: '0 auto',
-                    padding: '80px 24px',
+                    padding: isMobile ? '40px 16px' : '80px 24px',
                 }}>
                     <motion.div
                         initial={{ opacity: 0, y: 30 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        style={{ textAlign: 'center', marginBottom: '48px' }}
+                        style={{ textAlign: 'center', marginBottom: isMobile ? '32px' : '48px' }}
                     >
                         <h2 style={{
                             fontFamily: 'Gloock, serif',
-                            fontSize: '36px',
+                            fontSize: isMobile ? '24px' : '36px',
                             color: '#0a1628',
                             marginBottom: '8px',
                         }}>
@@ -614,7 +653,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         </h2>
                         <p style={{
                             fontFamily: 'Lora, serif',
-                            fontSize: '16px',
+                            fontSize: isMobile ? '14px' : '16px',
                             color: '#64748b',
                             maxWidth: '600px',
                             margin: '0 auto',
@@ -625,8 +664,8 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
 
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(2, 1fr)',
-                        gap: '24px',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                        gap: isMobile ? '16px' : '24px',
                     }}>
                         {product.features.map((feature, index) => {
                             const FeatureIcon = featureIcons[feature.icon] || Monitor;
@@ -641,27 +680,27 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                     style={{
                                         background: '#fff',
                                         borderRadius: '20px',
-                                        padding: '32px',
+                                        padding: isMobile ? '24px' : '32px',
                                         boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                                         border: '1px solid #f1f5f9',
                                         transition: 'all 0.3s ease',
                                     }}
                                 >
                                     <div style={{
-                                        width: '56px',
-                                        height: '56px',
+                                        width: isMobile ? '48px' : '56px',
+                                        height: isMobile ? '48px' : '56px',
                                         borderRadius: '16px',
                                         background: 'linear-gradient(135deg, #0066CC15, #0066CC08)',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
-                                        marginBottom: '20px',
+                                        marginBottom: isMobile ? '16px' : '20px',
                                     }}>
-                                        <FeatureIcon size={28} style={{ color: '#0066CC' }} />
+                                        <FeatureIcon size={isMobile ? 24 : 28} style={{ color: '#0066CC' }} />
                                     </div>
                                     <h3 style={{
                                         fontFamily: 'Gloock, serif',
-                                        fontSize: '20px',
+                                        fontSize: isMobile ? '17px' : '20px',
                                         color: '#0a1628',
                                         marginBottom: '10px',
                                     }}>
@@ -685,7 +724,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
             {/* Full Specifications Table */}
             {Object.keys(product.specs).length > 0 && (
                 <div style={{ background: '#fff', borderTop: '1px solid #e2e8f0' }}>
-                    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
+                    <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '32px 16px' : '60px 24px' }}>
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}
@@ -708,8 +747,9 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                             >
                                 <h2 style={{
                                     fontFamily: 'Gloock, serif',
-                                    fontSize: '28px',
+                                    fontSize: isMobile ? '22px' : '28px',
                                     color: '#0a1628',
+                                    textAlign: 'left',
                                 }}>
                                     Technical Specifications
                                 </h2>
@@ -732,7 +772,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                                     >
                                         <div style={{
                                             display: 'grid',
-                                            gridTemplateColumns: '1fr 1fr',
+                                            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
                                             gap: '0',
                                         }}>
                                             {Object.entries(product.specs).map(([key, value], i) => (
@@ -775,7 +815,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
             )}
 
             {/* Full Description */}
-            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '60px 24px' }}>
+            <div style={{ maxWidth: '1280px', margin: '0 auto', padding: isMobile ? '32px 16px' : '60px 24px' }}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
@@ -783,13 +823,13 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                     style={{
                         background: '#fff',
                         borderRadius: '20px',
-                        padding: '40px',
+                        padding: isMobile ? '24px' : '40px',
                         boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
                     }}
                 >
                     <h2 style={{
                         fontFamily: 'Gloock, serif',
-                        fontSize: '28px',
+                        fontSize: isMobile ? '22px' : '28px',
                         color: '#0a1628',
                         marginBottom: '16px',
                     }}>
@@ -797,7 +837,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                     </h2>
                     <p style={{
                         fontFamily: 'Lora, serif',
-                        fontSize: '16px',
+                        fontSize: isMobile ? '14px' : '16px',
                         color: '#374151',
                         lineHeight: 1.8,
                     }}>
@@ -809,7 +849,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
             {/* Bottom CTA */}
             <div style={{
                 background: 'linear-gradient(135deg, #0a1628, #0d2145)',
-                padding: '60px 24px',
+                padding: isMobile ? '40px 16px' : '60px 24px',
             }}>
                 <div style={{
                     maxWidth: '800px',
@@ -823,7 +863,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                     >
                         <h2 style={{
                             fontFamily: 'Gloock, serif',
-                            fontSize: '32px',
+                            fontSize: isMobile ? '24px' : '32px',
                             color: '#fff',
                             marginBottom: '12px',
                         }}>
@@ -831,7 +871,7 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                         </h2>
                         <p style={{
                             fontFamily: 'Lora, serif',
-                            fontSize: '16px',
+                            fontSize: isMobile ? '14px' : '16px',
                             color: '#94a3b8',
                             marginBottom: '28px',
                             lineHeight: 1.6,
@@ -839,7 +879,12 @@ export function ProductDetailPage({ productId, onNavigate }: ProductDetailPagePr
                             Our AV specialists can help you choose the perfect projector for your space.
                             Book a free consultation and get personalized recommendations.
                         </p>
-                        <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+                        <div style={{
+                            display: 'flex',
+                            gap: '12px',
+                            justifyContent: 'center',
+                            flexDirection: isMobile ? 'column' : 'row',
+                        }}>
                             <motion.button
                                 whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(255, 215, 0, 0.3)' }}
                                 whileTap={{ scale: 0.95 }}
