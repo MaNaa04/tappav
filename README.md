@@ -1,11 +1,12 @@
 # 🎬 TappAV — Premium Home Theater & AV E-Commerce
 
-A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a premium home theater and audio-visual equipment retailer. Built with React, TypeScript, Vite, and Framer Motion.
+A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a premium home theater and audio-visual equipment retailer. Built with React, TypeScript, Vite, and Framer Motion — deployed on Vercel.
 
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-6.3-646CFF?logo=vite&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-06B6D4?logo=tailwindcss&logoColor=white)
+![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?logo=vercel&logoColor=white)
 
 ---
 
@@ -46,14 +47,15 @@ A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a
 
 ## 🛠️ Tech Stack
 
-| Layer        | Technology                                       |
-|--------------|--------------------------------------------------|
-| Framework    | [React 18](https://react.dev/) + TypeScript      |
-| Build Tool   | [Vite 6](https://vite.dev/)                      |
-| Styling      | [Tailwind CSS](https://tailwindcss.com/) + Inline Styles |
-| Animations   | [Framer Motion](https://motion.dev/) (`motion/react`) |
-| Icons        | [Lucide React](https://lucide.dev/)              |
-| Fonts        | [Gloock](https://fonts.google.com/specimen/Gloock) (headings) · [Lora](https://fonts.google.com/specimen/Lora) (body) |
+| Layer        | Technology                                                                  |
+|--------------|-----------------------------------------------------------------------------|
+| Framework    | [React 18](https://react.dev/) + TypeScript                                |
+| Build Tool   | [Vite 6](https://vite.dev/)                                                |
+| Styling      | [Tailwind CSS](https://tailwindcss.com/) + Inline Styles                   |
+| Animations   | [Framer Motion](https://motion.dev/) (`motion/react`)                      |
+| Icons        | [Lucide React](https://lucide.dev/)                                        |
+| Fonts        | [Gloock](https://fonts.google.com/specimen/Gloock) · [Lora](https://fonts.google.com/specimen/Lora) |
+| Deployment   | [Vercel](https://vercel.com/)                                              |
 
 ---
 
@@ -68,7 +70,7 @@ A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/tappav.git
+git clone https://github.com/MaNaa04/tappav.git
 cd tappav
 
 # Install dependencies
@@ -112,26 +114,63 @@ The app uses a lightweight **hash-based router** (`src/hooks/useRouter.ts`). Nav
 ## 📁 Project Structure
 
 ```
-src/
-├── components/
-│   ├── BlueNavbar.tsx          # Primary navbar with mega-menu
-│   ├── SecondaryNav.tsx        # Secondary navigation bar
-│   ├── HeroSection.tsx         # Landing page hero
-│   ├── ExperienceCards.tsx     # Experience carousel
-│   ├── ProcessSteps.tsx        # Process steps section
-│   ├── TestimonialSection.tsx  # Customer testimonials
-│   ├── CTASection.tsx          # Call-to-action section
-│   ├── MainFooter.tsx          # Site footer
-│   ├── ProductListingPage.tsx  # Store listing with filters
-│   └── ProductDetailPage.tsx   # Individual product page
-├── data/
-│   └── products.ts             # Product data, types & utilities
-├── hooks/
-│   └── useRouter.ts            # Hash-based SPA router hook
-├── App.tsx                     # Root component with routing
-├── main.tsx                    # Application entry point
-└── index.css                   # Global styles & Tailwind config
+TappAV-main/
+│
+├── .gitignore                   # Git exclusion rules
+├── README.md                    # Project documentation
+├── index.html                   # HTML entry point
+├── package.json                 # Dependencies & scripts
+├── package-lock.json            # Dependency lock file
+├── vite.config.ts               # Vite config & path aliases
+├── vercel.json                  # Vercel deployment config (SPA rewrite)
+│
+└── src/
+    ├── main.tsx                 # App entry point (renders <App />)
+    ├── App.tsx                  # Root component with hash-based routing
+    ├── index.css                # Global styles & Tailwind config
+    ├── Attributions.md          # Asset attributions
+    │
+    ├── components/              # UI Components (10 files)
+    │   ├── BlueNavbar.tsx       # Primary navbar with mega-menu
+    │   ├── SecondaryNav.tsx     # Secondary navigation bar
+    │   ├── HeroSection.tsx      # Landing page hero section
+    │   ├── ExperienceCards.tsx   # Experience cards carousel
+    │   ├── ProcessSteps.tsx     # Process steps section
+    │   ├── TestimonialSection.tsx # Customer testimonials
+    │   ├── CTASection.tsx       # Call-to-action section
+    │   ├── MainFooter.tsx       # Site footer
+    │   ├── ProductListingPage.tsx # Store listing with filters & compare
+    │   └── ProductDetailPage.tsx  # Product detail with gallery & specs
+    │
+    ├── data/                    # Data Layer
+    │   └── products.ts          # Product types, sample data & utilities
+    │
+    ├── hooks/                   # Custom React Hooks
+    │   └── useRouter.ts         # Hash-based SPA router hook
+    │
+    ├── styles/                  # Additional Styles
+    │   └── globals.css          # Global/supplementary CSS
+    │
+    └── guidelines/              # Dev Guidelines
+        └── Guidelines.md        # Design & development guidelines
 ```
+
+---
+
+## ☁️ Deployment (Vercel)
+
+This project is configured for **one-click Vercel deployment**:
+
+1. Push code to GitHub (already done → [github.com/MaNaa04/tappav](https://github.com/MaNaa04/tappav))
+2. Go to [vercel.com/new](https://vercel.com/new) → **Import** your GitHub repo
+3. Vercel auto-detects **Vite** — click **Deploy**
+4. Done! Your site is live 🎉
+
+The `vercel.json` file handles:
+- **Framework**: Vite
+- **Build command**: `npm run build`
+- **Output directory**: `dist`
+- **SPA rewrites**: All routes → `index.html` (so hash routing works on refresh)
 
 ---
 
