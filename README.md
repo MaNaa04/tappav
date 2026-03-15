@@ -1,6 +1,6 @@
 # 🎬 TappAV — Premium Home Theater & AV E-Commerce
 
-A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a premium home theater and audio-visual equipment retailer. Built with React, TypeScript, Vite, and Framer Motion — deployed on Vercel.
+A modern, high-fidelity e-commerce landing page and storefront for **TappAV**, a premium home theater and audio-visual equipment retailer. Built with React, TypeScript, Vite, and Framer Motion — deployed on Vercel. updated readme
 
 ![React](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?logo=typescript&logoColor=white)
